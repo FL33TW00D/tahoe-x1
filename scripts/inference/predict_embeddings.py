@@ -104,6 +104,7 @@ def predict_embeddings(cfg: DictConfig) -> None:
     trainer = Trainer(
         model=model,
         device="gpu" if torch.cuda.is_available() else "cpu",
+        progress_bar=True,
     )
 
     predictions = trainer.predict(loader, return_outputs=True)
