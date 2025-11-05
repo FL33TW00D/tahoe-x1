@@ -373,6 +373,8 @@ def main(cfg: DictConfig) -> composer.Trainer:
     special_tokens = ["<pad>", "<cls>", "<eoc>"]
     if collator_config.get("use_chem_token", False):
         special_tokens.append("<drug>")
+    if collator_config.get("use_pert_token", False):
+        special_tokens.append("<perturbation>")
 
     for s in special_tokens:
         if s not in vocab:

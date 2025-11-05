@@ -20,6 +20,7 @@ from tahoe_x1.model.blocks import (
     ExprDecoder,
     GeneEncoder,
     MVCDecoder,
+    PertEncoder,
     TXBlock,
     TXEncoder,
     gene_encoder_defaults,
@@ -115,6 +116,15 @@ class TXModel(nn.Module):
                 drug_fps_path=chem_encoder_config.get("drug_fps_path"),
                 num_drugs=chem_encoder_config.get("num_drugs", None),
                 fp_dim=chem_encoder_config.get("fp_dim", None),
+            )
+
+        if self.use_pert_token:
+            pert_encoder_config = model_config.perturbation_encoder
+            self.pert_encoder = PertEncoder(
+                pert_path=pert_encoder_config.get("pert_path"),
+                d_out=self.d_model,
+                padding_idx=pert_encoder_config.get("padding_idx", 0),
+                activation=pert_encoder_config.get("activation", "leaky_relu"),
             )
 
         encoder_layers = TXBlock(

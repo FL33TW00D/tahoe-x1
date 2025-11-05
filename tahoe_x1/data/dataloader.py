@@ -78,6 +78,7 @@ def build_dataloader(
         right_binning=collator_cfg.get("right_binning", False),
         keep_first_n_tokens=collator_cfg.get("keep_first_n_tokens", 1),
         use_chem_token=collator_cfg.get("use_chem_token", False),
+        use_pert_token=collator_cfg.get("use_pert_token", False),
     )
 
     data_loader = StreamingDataLoader(

@@ -52,6 +52,7 @@ class DataCollator(DefaultDataCollator):
         vocab: GeneVocab,
         drug_to_id_path: Optional[dict] = None,
         use_chem_token: int = False,
+        use_pert_token: int = False,
         do_padding: bool = True,
         unexp_padding: bool = False,
         pad_token_id: Optional[int] = None,
@@ -103,6 +104,12 @@ class DataCollator(DefaultDataCollator):
             self.drug_token_id = vocab["<drug>"]
         else:
             self.drug_token_id = None
+        if self.use_pert_token:
+            assert "<perturbation>" in vocab, "<perturbation> token must be in the vocabulary."
+            self.pert_token_id = vocab["<perturbation>"]
+        else:
+            self.pert_token_id = None
+
         assert not self.use_chem_token or drug_to_id_path is not None, (
             "If `use_chem_token` is True, `drug_to_id_path` must be provided.",
         )

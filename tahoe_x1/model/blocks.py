@@ -463,6 +463,56 @@ class ChemEncoder(nn.Module):
             x = self.norm(x)
         return x
 
+class PertEncoder(nn.Module):
+    def __init__(
+        self,
+        pert_path: dict,
+        d_out: int,
+        padding_idx: int = 0,
+        activation: str = "leaky_relu",
+        use_norm: bool = True,
+        freeze: bool = False,
+    ):
+        super().__init__()
+
+        if dist.get_local_rank() == 0:
+            download_file_from_s3_url(
+                s3_url=pert_path["remote"],
+                local_file_path=pert_path["local"],
+            )
+        with dist.local_rank_zero_download_and_wait(pert_path["local"]):
+            dist.barrier()
+
+        pert_emb = torch.as_tensor(
+            np.load(pert_path["local"]),
+            dtype=torch.float32,
+        )
+        embedding_dim = pert_emb.shape[1]
+
+        self.embedding = nn.Embedding.from_pretrained(
+            pert_emb,
+            padding_idx=padding_idx,
+            freeze=freeze,
+        )
+        for m in self.embedding.modules():
+            m.skip_init = True
+        self.fc = nn.Linear(embedding_dim, d_out)
+        self.activation = resolve_ffn_act_fn({"name": activation})
+        self.proj = nn.Linear(d_out, d_out)
+
+        self.use_norm = use_norm
+        if self.use_norm:
+            self.norm = nn.LayerNorm(d_out)
+
+    def forward(self, x: Tensor) -> Tensor:
+        x = self.embedding(x)  # (batch, d_out)
+        x = self.activation(self.fc(x))
+        x = self.proj(x)  # (batch, d_out)
+
+        if self.use_norm:
+            x = self.norm(x)
+        return x
+
 
 class ContinuousValueEncoder(nn.Module):
     """Encode real number values to a vector using neural nets projection."""
