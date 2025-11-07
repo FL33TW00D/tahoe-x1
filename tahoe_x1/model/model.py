@@ -49,6 +49,7 @@ class TXModel(nn.Module):
         self.norm_scheme = model_config.get("norm_scheme", "pre")
         self.transformer_activation = model_config.get("transformer_activation", "gelu")
         self.use_chem_token = collator_config.get("use_chem_token", False)
+        self.use_pert_token = collator_config.get("use_pert_token", False)
         assert (
             not self.use_chem_token or "chemical_encoder" in model_config
         ), "If use_chem_token is set to True, chemical_encoder submodule needs to be specified!"
