@@ -1,6 +1,6 @@
 output_root: "/home/ubuntu/code/tahoe-x1/datasets/atlas_orion"
 vocab:
-  reference_adata: "QC_kd_unified_hct_merged_updated.h5ad"
+  reference_adata: "QC_kd_unified_hct_merged_updated_filtered.h5ad"
   use_col: "gene_id"
   add_junk_tokens: True
   special_tokens: ["<pad>","<cls>","<eoc>"]
