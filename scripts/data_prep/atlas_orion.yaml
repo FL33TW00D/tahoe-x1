@@ -13,9 +13,9 @@ huggingface:
   pad_value: -2
   gene_col: "gene_id"
   adata_dir: "/home/ubuntu/code/tahoe-x1/datasets/atlas_orion"
-  num_chunks: 10
-  output_root: "/home/ubuntu/code/tahoe_x1/datasets/atlas_orion/orion_hf_chunks"
-  merged_dataset_root: "/home/ubuntu/code/tahoe_x1/datasets/atlas_orion/orion_merged"
+  num_chunks: 1 
+  output_root: "/home/ubuntu/code/tahoe-x1/datasets/atlas_orion/orion_hf_chunks"
+  merged_dataset_root: "/home/ubuntu/code/tahoe-x1/datasets/atlas_orion/orion_merged"
   split_parameters:
     test_size: 0.01
     seed: 42
@@ -28,7 +28,7 @@ huggingface:
   vocab_path: ${vocab.output_file}
 
 mds:
-  out_root: "/home/ubuntu/code/tahoe_x1/datasets/atlas_orion/orion_merged_MDS"
+  out_root: "/home/ubuntu/code/tahoe-x1/datasets/atlas_orion/orion_merged_MDS"
   root_dir: ${huggingface.merged_dataset_root}
   num_proc: 128
   splits:
@@ -38,7 +38,8 @@ mds:
     expressions: "pkl"
     genes: "pkl"
     id: "int64"
-    gene_id: "int64"
+    gene_id: "str"
+    kd_eff: "float64"
   compression: zstd
   hashes:
     - "sha1"

@@ -57,6 +57,7 @@ install_requires = [
     "mosaicml-streaming>=0.7.0,<1.0",
     "torch>=2.5.0,<3.0",
     "scanpy>=1.9.0,<2.0",
+     "datasets", 
 ]
 
 extra_deps = {}

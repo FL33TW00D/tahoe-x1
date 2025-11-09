@@ -180,6 +180,8 @@ def main(cfg: DictConfig) -> None:
             log.info(f"Chunk {i} dataset already exists. Skipping.")
             continue
         log.info(f"Processing chunk {i} with {len(chunk)} files")
+        num_proc = min(len(chunk), cfg.huggingface.get("num_proc", 1))
+        log.info(f"Num proc: {num_proc}")
         chunk_dataset = datasets.Dataset.from_generator(
             dataset_generator,
             gen_kwargs={
@@ -187,7 +189,7 @@ def main(cfg: DictConfig) -> None:
                 "cfg": cfg.huggingface,
                 "vocab": vocab,
             },
-            num_proc=min(len(chunk), cfg.huggingface.get("num_proc", 1)),
+            num_proc=num_proc,
             keep_in_memory=False,
         )
         chunk_dataset.save_to_disk(
