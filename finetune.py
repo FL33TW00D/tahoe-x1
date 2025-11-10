@@ -6,11 +6,12 @@ from train import main
 
 
 # Load configuration for fine-tuning
-finetune_cfg = om.load("./configs/test_run.yaml")
+finetune_cfg = om.load("./configs/finetune_orion_70m.yaml")
 
 # Set checkpoint path
-checkpoint_path = "./best-model-70m.pt"  # Or local path
+checkpoint_path = "./best-model-70m-resized.pt"  # Or local path
 finetune_cfg.load_path = checkpoint_path
+finetune_cfg.load_strict_model_weights = False
 
 # Adjust learning rate for fine-tuning and schedular for finetuning
 finetune_cfg.optimizer.lr = 1.0e-5

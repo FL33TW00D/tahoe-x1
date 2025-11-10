@@ -463,6 +463,7 @@ def main(cfg: DictConfig) -> composer.Trainer:
             collator_config=collator_config,
         )
 
+
     # Log number of parameters
     n_params = sum(p.numel() for p in model.parameters())
     n_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)

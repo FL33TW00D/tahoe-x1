@@ -45,6 +45,13 @@ model:
     n_outputs: 1
     n_layers: 1
     activation: "leaky_relu"
+  pert_encoder:
+    pert_path:
+      remote: "s3://fleetwood/orion/pert_features.pt"
+      local: "pert_features.pt"
+    activation: "gelu"
+    padding_idx: 0
+    freeze: False
 collator:
   do_padding: True
   pad_value: -2
@@ -60,7 +67,9 @@ collator:
   use_junk_tokens: False
   use_pert_token: True
   pert_to_id_path:
-    local: "pert_to_id_pad.json"
+    remote: "s3://fleetwood/orion/pert_to_id.json"
+    local: "pert_to_id.json"
+  keep_first_n_tokens: 2
 train_loader:
   dataset:
     streams:

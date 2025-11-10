@@ -120,7 +120,7 @@ class TXModel(nn.Module):
             )
 
         if self.use_pert_token:
-            pert_encoder_config = model_config.perturbation_encoder
+            pert_encoder_config = model_config.pert_encoder
             self.pert_encoder = PertEncoder(
                 pert_path=pert_encoder_config.get("pert_path"),
                 d_out=self.d_model,
@@ -192,6 +192,9 @@ class TXModel(nn.Module):
         drug_ids: Optional[
             Tensor
         ] = None,  # drug_ids is None if use_chem_token is set to False
+        pert_ids: Optional[
+            Tensor
+        ] = None, 
     ) -> Tensor:
 
         token_embs = self.gene_encoder(genes)  # (batch, seq_len, embsize)
@@ -210,6 +213,11 @@ class TXModel(nn.Module):
             # calculate chemical embedding and put it in its correct place (after <cls>)
             drug_embs = self.chem_encoder(drug_ids)  # (batch, embsize)
             total_embs[:, 1, :] = drug_embs  # (batch, seq_len, embsize)
+
+        if self.use_pert_token:
+            pert_embs = self.pert_encoder(pert_ids)  # (batch, embsize)
+            total_embs[:, 1, :] = pert_embs  # (batch, seq_len, embsize)
+
 
         self.cur_gene_token_embs = token_embs
 
@@ -256,6 +264,7 @@ class TXModel(nn.Module):
         gen_masks: Tensor,
         key_padding_mask: Tensor,
         drug_ids: Optional[Tensor] = None,
+        pert_ids: Optional[Tensor] = None,
         skip_decoders: Optional[bool] = None,
     ) -> Mapping[str, Tensor]:
 
@@ -269,6 +278,7 @@ class TXModel(nn.Module):
             gen_masks,
             key_padding_mask,
             drug_ids=drug_ids,
+            pert_ids=pert_ids,
         )
 
         output = {}
@@ -341,6 +351,11 @@ class ComposerTX(ComposerModel):
         drug_ids = (
             batch["drug_ids"] if "drug_ids" in batch else None
         )  # drug_ids is None if use_chem_token is set to False
+        pert_ids = (
+            batch["pert_ids"] if "pert_ids" in batch else None
+        )  # pert_ids is None if use_pert_token is set to False
+
+        print(f" BATCH PERT IDS: {pert_ids}")
 
         output_dict = self.model(
             genes,
@@ -348,6 +363,7 @@ class ComposerTX(ComposerModel):
             gen_masks,
             key_padding_mask,
             drug_ids=drug_ids,
+            pert_ids=pert_ids,
             skip_decoders=skip_decoders,
         )
 

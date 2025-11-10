@@ -51,6 +51,7 @@ class DataCollator(DefaultDataCollator):
         self,
         vocab: GeneVocab,
         drug_to_id_path: Optional[dict] = None,
+        pert_to_id_path: Optional[dict] = None,
         use_chem_token: int = False,
         use_pert_token: int = False,
         do_padding: bool = True,
@@ -133,6 +134,18 @@ class DataCollator(DefaultDataCollator):
             with open(drug_to_id_path["local"]) as f:
                 self.drug_to_id = json.load(f)
 
+        if self.use_pert_token:
+            if dist.get_local_rank() == 0:
+                download_file_from_s3_url(
+                    s3_url=pert_to_id_path["remote"],
+                    local_file_path=pert_to_id_path["local"],
+                )
+            with dist.local_rank_zero_download_and_wait(pert_to_id_path["local"]):
+                dist.barrier()
+
+            with open(pert_to_id_path["local"]) as f:
+                self.pert_to_id = json.load(f)
+
     def __post_init__(self):
         if self.do_padding:
             if self.pad_token_id is None:
@@ -190,6 +203,17 @@ class DataCollator(DefaultDataCollator):
                     self.drug_to_id[drug],
                     dtype=torch.int,
                 )
+
+            if self.use_pert_token:
+                pert = (
+                    example["gene_id"]
+                    if "gene_id" in example and example["gene_id"] in self.pert_to_id
+                    else "<pad>"
+                )
+                example["pert_id"] = torch.as_tensor(
+                    self.pert_to_id[pert],
+                    dtype=torch.int,
+                )
             if isinstance(example["genes"], list):
                 example["genes"] = torch.as_tensor(example["genes"])
             example["genes"] = torch.squeeze(example["genes"])
@@ -216,6 +240,8 @@ class DataCollator(DefaultDataCollator):
         expr_raws = []
         gen_masks = []
         drug_ids = [] if self.use_chem_token else None
+        pert_ids = [] if self.use_pert_token else None
+
 
         for example in examples:
             genes = example["genes"]
@@ -244,6 +270,32 @@ class DataCollator(DefaultDataCollator):
                         expressions[1:],
                     ),
                 )
+
+            if self.use_pert_token:
+                genes = torch.cat(
+                    (
+                        genes[:1],
+                        torch.tensor(
+                            [self.pert_token_id],
+                            device=genes.device,
+                            dtype=genes.dtype,
+                        ),
+                        genes[1:],
+                    ),
+                )
+                expressions = torch.cat(
+                    (
+                        expressions[:1],
+                        torch.tensor(
+                            [self.pad_value],
+                            device=expressions.device,
+                            dtype=expressions.dtype,
+                        ),
+                        expressions[1:],
+                    ),
+                )
+
+
             raw_expressions = expressions.detach().clone()
             if self.do_binning:
                 expressions[self.keep_first_n_tokens :] = binning(
@@ -284,6 +336,11 @@ class DataCollator(DefaultDataCollator):
                 drug = example["drug_id"]
                 drug_ids.append(drug)
 
+            if self.use_pert_token:
+                pert = example["pert_id"]
+                pert_ids.append(pert)
+
+
         data_dict = {
             "gene": torch.stack(padded_genes, dim=0),
             "expr": torch.stack(masked_exprs, dim=0),
@@ -294,6 +351,10 @@ class DataCollator(DefaultDataCollator):
         if self.use_chem_token:
             drug_ids = torch.stack(drug_ids)
             data_dict["drug_ids"] = drug_ids
+
+        if self.use_pert_token:
+            pert_ids = torch.stack(pert_ids)
+            data_dict["pert_ids"] = pert_ids
 
         # add reserved keys
         for key in self.reserve_keys:

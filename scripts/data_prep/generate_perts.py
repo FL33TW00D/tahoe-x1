@@ -17,6 +17,7 @@ if __name__ == "__main__":
         pert_to_id[id] = i
         i += 1
     perts["non-targeting"] = torch.zeros(embedding_dim)
+    perts["<pad>"] = torch.zeros(embedding_dim)
 
     print("Total number of perts: ", len(pert_to_id))
     print("Sample pert_to_id items: ", list(pert_to_id.items())[:5])

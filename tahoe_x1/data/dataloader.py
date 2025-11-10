@@ -61,6 +61,7 @@ def build_dataloader(
 
     collate_fn = DataCollator(
         vocab=vocab,
+        pert_to_id_path=collator_cfg.get("pert_to_id_path", None),
         drug_to_id_path=collator_cfg.get("drug_to_id_path", None),
         do_padding=collator_cfg.get("do_padding", True),
         unexp_padding=loader_cfg.get("unexp_padding", False),

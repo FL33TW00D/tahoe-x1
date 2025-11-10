@@ -104,9 +104,11 @@ def loader_from_adata(
         cls_token_id=vocab["<cls>"],
         pad_value=collator_cfg["pad_value"],
     )
+    print(f"pert to id path: {collator_cfg.get('pert_to_id_path', None)}")
     collate_fn = DataCollator(
         vocab=vocab,
         drug_to_id_path=collator_cfg.get("drug_to_id_path", None),
+        pert_to_id_path=collator_cfg.get("pert_to_id_path", None),
         do_padding=collator_cfg.get("do_padding", True),
         unexp_padding=False,  # Disable padding with random unexpressed genes for inference
         pad_token_id=collator_cfg.pad_token_id,
