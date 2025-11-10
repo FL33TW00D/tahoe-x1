@@ -218,7 +218,6 @@ class TXModel(nn.Module):
             pert_embs = self.pert_encoder(pert_ids)  # (batch, embsize)
             total_embs[:, 1, :] = pert_embs  # (batch, seq_len, embsize)
 
-
         self.cur_gene_token_embs = token_embs
 
         output = self.transformer_encoder(

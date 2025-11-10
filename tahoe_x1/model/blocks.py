@@ -483,8 +483,7 @@ class PertEncoder(nn.Module):
         with dist.local_rank_zero_download_and_wait(pert_path["local"]):
             dist.barrier()
 
-        pert_dict = torch.load(pert_path["local"])
-        pert_emb = torch.stack(list(pert_dict.values()))
+        pert_emb = torch.load(pert_path["local"])
         embedding_dim = pert_emb.shape[1]
 
         self.embedding = nn.Embedding.from_pretrained(
