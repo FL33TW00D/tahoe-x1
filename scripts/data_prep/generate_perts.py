@@ -4,9 +4,9 @@ from fetch_perts import fetch
 import json
 
 if __name__ == "__main__":
-    if not os.path.exists("./ESM2_pert_features_ensembl.pt"): 
+    if not os.path.exists("./ESM2_pert_features_ensembl_22631.pt"): 
         fetch()
-    perts = torch.load("./ESM2_pert_features_ensembl.pt")
+    perts = torch.load("./ESM2_pert_features_ensembl_22631.pt")
     print(perts.keys())
     embedding_dim = 5120
 

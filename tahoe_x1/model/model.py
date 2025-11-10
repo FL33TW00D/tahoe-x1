@@ -355,8 +355,6 @@ class ComposerTX(ComposerModel):
             batch["pert_ids"] if "pert_ids" in batch else None
         )  # pert_ids is None if use_pert_token is set to False
 
-        print(f" BATCH PERT IDS: {pert_ids}")
-
         output_dict = self.model(
             genes,
             exprs,
