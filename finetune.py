@@ -19,8 +19,6 @@ finetune_cfg.scheduler = {}
 finetune_cfg.scheduler.name = 'constant_with_warmup'
 finetune_cfg.scheduler.t_warmup = '0ba'
 
-finetune_cfg.max_duration = "30ba"
-
 # Update save folder
 finetune_cfg.save_folder = "./checkpoints/finetuned_{run_name}"
 

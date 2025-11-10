@@ -167,3 +167,4 @@ ckpt/
 *.h5ad.gz
 *.arrow
 datasets/*
+mds-data-folder/
