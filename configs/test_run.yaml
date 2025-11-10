@@ -62,7 +62,7 @@ train_loader:
   dataset:
     streams:
       atlas_orion:
-        atlas_orion: "r2://fleetwood/orion_mds/train/"
+        remote: "s3://fleetwood/orion_mds/train/"
         local: "mds-data-folder/orion_mds/train"
     download_timeout: 300
     allow_unsafe_types: True
@@ -78,7 +78,7 @@ valid_loader:
   dataset:
     streams:
       atlas_orion:
-        remote: "r2://fleetwood/orion_mds/valid/"
+        remote: "s3://fleetwood/orion_mds/valid/"
         local: "mds-data-folder/orion_mds/valid"
     download_timeout: 300
     allow_unsafe_types: True
