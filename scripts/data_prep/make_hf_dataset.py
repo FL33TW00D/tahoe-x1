@@ -166,6 +166,8 @@ def main(cfg: DictConfig) -> None:
     adata_files = find_h5ad_files(cfg.huggingface.adata_dir, cfg.huggingface.ignore_dir)
     if len(adata_files) == 0:
         raise ValueError(f"Found no .h5ad files in the specified directory: {cfg.huggingface.adata_dir}, {cfg.huggingface.ignore_dir}")
+    else:
+        log.info(f"Files found: {adata_files}")
     vocab_file = os.path.join(
         cfg.huggingface.vocab_output_root,
         cfg.huggingface.vocab_path,

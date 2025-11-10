@@ -2,11 +2,13 @@ import anndata as ad
 import numpy as np
 
 # Read in backed mode
-adata = ad.read_h5ad("./QC_kd_unified_hct_merged_updated.h5ad", backed='r')
+adata = ad.read_h5ad("./QC_kd_unified_hct_merged.h5ad", backed='r')
 print(f"Total cells: {adata.n_obs}")
 
+adata.obs["kd_eff"] = adata.obs["kd_eff"].astype("float64")
+
 # Get mask without loading full data
-mask = adata.obs["kd_eff"].values >= 0.3
+mask = (adata.obs["target_gene"] == "non-targeting") | (adata.obs["kd_eff"] >= 0.3)
 keep_indices = np.where(mask)[0]
 print(f"Keeping {len(keep_indices)} cells ({100*len(keep_indices)/adata.n_obs:.1f}%)")
 
@@ -27,5 +29,5 @@ for i in range(n_chunks):
 # Concatenate and save
 print("Concatenating chunks...")
 adata_filtered = ad.concat(chunks, axis=0, merge="same")
-adata_filtered.write_h5ad("./QC_kd_unified_hct_merged_updated_filtered.h5ad")
+adata_filtered.write_h5ad("./QC_kd_unified_hct_merged_filtered.h5ad")
 print("✓ Done!")

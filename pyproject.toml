@@ -147,4 +147,7 @@ torchvision = { index = "pytorch" }
 dev = [
     "anndata>=0.11.4",
     "cyclopts>=4.2.1",
+    "datasets>=4.4.1",
+    "pyarrow>=22.0.0",
+    "transformers>=4.57.1",
 ]

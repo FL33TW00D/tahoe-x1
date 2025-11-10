@@ -166,3 +166,4 @@ ckpt/
 *.h5ad
 *.h5ad.gz
 *.arrow
+datasets/*
