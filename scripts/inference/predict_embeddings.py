@@ -49,10 +49,9 @@ def predict_embeddings(cfg: DictConfig) -> None:
 
     # load model from local dir or HF
     model_dir = cfg.paths.get("model_dir", None)
-    print("MODEL DIR: ", model_dir)
     if model_dir is not None:
         log.info(f"Loading model from local directory {model_dir}")
-        model, vocab, _, coll_cfg = load_model(
+        model, vocab, mdl_cfg, coll_cfg = load_model(
             model_dir,
             device=device,
             return_gene_embeddings=return_gene_embeddings,
@@ -102,6 +101,17 @@ def predict_embeddings(cfg: DictConfig) -> None:
         num_workers=num_workers,
         prefetch_factor=prefetch_factor,
     )
+
+    #print first example from loader
+    for batch in loader:
+        print("Example batch from data loader:")
+        for k, v in batch.items():
+            if isinstance(v, torch.Tensor):
+                print(f"  {k}: shape {v.shape}, dtype {v.dtype}")
+            else:
+                print(f"  {k}: type {type(v)}")
+        print(batch["pert_ids"])
+        break
 
     trainer = Trainer(
         model=model,

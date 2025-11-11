@@ -115,8 +115,14 @@ class DataCollator(DefaultDataCollator):
         assert not self.use_chem_token or drug_to_id_path is not None, (
             "If `use_chem_token` is True, `drug_to_id_path` must be provided.",
         )
+        assert not self.use_pert_token or pert_to_id_path is not None, (
+            "If `use_pert_token` is True, `pert_to_id_path` must be provided.",
+        )
         assert drug_to_id_path is None or self.use_chem_token, (
             "If `drug_to_id_path` is provided, `use_chem_token` must be True.",
+        )
+        assert pert_to_id_path is None or self.use_pert_token, (
+            "If `pert_to_id_path` is provided, `use_pert_token` must be True.",
         )
         assert not self.use_chem_token or self.keep_first_n_tokens > 1, (
             "If `use_chem_token` is True, we need to keep <cls> and <drug> token in the beggining of pcpt_genes. So `keep_first_n_tokens` must be >=2!",
@@ -135,6 +141,7 @@ class DataCollator(DefaultDataCollator):
                 self.drug_to_id = json.load(f)
 
         if self.use_pert_token:
+            print("Loading pert_to_id mapping...")
             if dist.get_local_rank() == 0:
                 download_file_from_s3_url(
                     s3_url=pert_to_id_path["remote"],
@@ -145,6 +152,8 @@ class DataCollator(DefaultDataCollator):
 
             with open(pert_to_id_path["local"]) as f:
                 self.pert_to_id = json.load(f)
+            
+            print(f"Loaded {len(self.pert_to_id)} perturbation ids.")
 
     def __post_init__(self):
         if self.do_padding:
@@ -225,6 +234,7 @@ class DataCollator(DefaultDataCollator):
                 f"reserve_keys must be a subset of the keys in the examples. "
                 f"Got {self.reserve_keys} but expected keys in {list(examples[0].keys())}."
             )
+
 
         if not isinstance(examples[0], Mapping):
             raise NotImplementedError
@@ -339,7 +349,6 @@ class DataCollator(DefaultDataCollator):
             if self.use_pert_token:
                 pert = example["pert_id"]
                 pert_ids.append(pert)
-
 
         data_dict = {
             "gene": torch.stack(padded_genes, dim=0),

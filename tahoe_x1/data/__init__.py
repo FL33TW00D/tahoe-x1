@@ -5,6 +5,7 @@ from tahoe_x1.utils.s3_utils import patch_streaming_for_public_s3
 from .collator import DataCollator
 from .dataloader import (
     CountDataset,
+    PertDataset,
     build_dataloader,
     build_perturbation_dataloader,
 )
@@ -13,6 +14,7 @@ patch_streaming_for_public_s3()
 
 __all__ = [
     "CountDataset",
+    "PertDataset",
     "DataCollator",
     "build_dataloader",
     "build_perturbation_dataloader",

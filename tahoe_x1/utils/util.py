@@ -56,7 +56,6 @@ def load_model(
         del collator_config["drug_to_id_path"]
         strict = False
 
-    print(model_config)
     model = ComposerTX(
         model_config=model_config,
         collator_config=collator_config,
@@ -97,13 +96,12 @@ def loader_from_adata(
     if max_length is None:
         max_length = len(gene_ids)
 
-    from tahoe_x1.data import CountDataset, DataCollator
+    from tahoe_x1.data import PertDataset, DataCollator
 
-    print(adata.obs["gene_id"].value_counts())
-
-    dataset = CountDataset(
+    dataset = PertDataset(
         count_matrix,
         gene_ids,
+        pert_genes=np.array(adata.obs["gene_id"].tolist()),
         cls_token_id=vocab["<cls>"],
         pad_value=collator_cfg["pad_value"],
     )
