@@ -24,6 +24,7 @@ def load_model(
     device: torch.device,
     return_gene_embeddings: bool = False,
     use_chem_inf: Optional[bool] = False,
+    use_pert_inf: Optional[bool] = False,
 ):
     from tahoe_x1.model.model import ComposerTX
 
@@ -33,6 +34,7 @@ def load_model(
     ckpt = os.path.join(model_dir, "best-model.pt")
 
     model_config = om.load(model_config_path)
+    print(model_config)
     if model_config["attn_config"]["attn_impl"] == "triton":
         model_config["attn_config"]["attn_impl"] = "flash"
         model_config["attn_config"]["use_attn_mask"] = False
@@ -104,7 +106,6 @@ def loader_from_adata(
         cls_token_id=vocab["<cls>"],
         pad_value=collator_cfg["pad_value"],
     )
-    print(f"pert to id path: {collator_cfg.get('pert_to_id_path', None)}")
     collate_fn = DataCollator(
         vocab=vocab,
         drug_to_id_path=collator_cfg.get("drug_to_id_path", None),

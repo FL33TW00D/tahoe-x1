@@ -1,7 +1,7 @@
 """CLI for predicting embeddings with Tahoe-x1 models."""
 
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Optional
 import anndata as ad
 
 import cyclopts
@@ -19,6 +19,10 @@ def predict(
         str,
         cyclopts.Parameter(help="Model size: 70m, 1b, or 3b"),
     ] = "70m",
+    model_dir: Annotated[
+        Optional[str],
+        cyclopts.Parameter(help="Local model directory")
+    ] = None
 ) -> None:
     """Predict embeddings and save to output file.
     
@@ -37,6 +41,7 @@ def predict(
             "hf_repo_id": "tahoebio/Tahoe-x1",
             "hf_model_size": model_size,
             "adata_input": file_name,
+            "model_dir": model_dir
         },
         "data": {
             "cell_type_key": "cell_type",
@@ -45,6 +50,7 @@ def predict(
         "predict": {
             "seq_len_dataset": 2048,
             "return_gene_embeddings": False,
+            "use_pert_inf": True
         }
     }
     cfg = om.create(cfg)

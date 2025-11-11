@@ -49,6 +49,7 @@ def predict_embeddings(cfg: DictConfig) -> None:
 
     # load model from local dir or HF
     model_dir = cfg.paths.get("model_dir", None)
+    print("MODEL DIR: ", model_dir)
     if model_dir is not None:
         log.info(f"Loading model from local directory {model_dir}")
         model, vocab, _, coll_cfg = load_model(
