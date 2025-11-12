@@ -110,7 +110,7 @@ def predict_embeddings(cfg: DictConfig) -> None:
                 print(f"  {k}: shape {v.shape}, dtype {v.dtype}")
             else:
                 print(f"  {k}: type {type(v)}")
-        print(batch["pert_ids"])
+        print(batch["target_gene_ids"])
         break
 
     trainer = Trainer(

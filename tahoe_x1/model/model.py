@@ -49,7 +49,7 @@ class TXModel(nn.Module):
         self.norm_scheme = model_config.get("norm_scheme", "pre")
         self.transformer_activation = model_config.get("transformer_activation", "gelu")
         self.use_chem_token = collator_config.get("use_chem_token", False)
-        self.use_pert_token = collator_config.get("use_pert_token", False)
+        self.use_genetic_token = collator_config.get("use_pert_token", False)
         assert (
             not self.use_chem_token or "chemical_encoder" in model_config
         ), "If use_chem_token is set to True, chemical_encoder submodule needs to be specified!"
@@ -119,9 +119,9 @@ class TXModel(nn.Module):
                 fp_dim=chem_encoder_config.get("fp_dim", None),
             )
 
-        if self.use_pert_token:
+        if self.use_genetic_token:
             pert_encoder_config = model_config.pert_encoder
-            self.pert_encoder = PertEncoder(
+            self.gene_pert_encoder = PertEncoder(
                 pert_path=pert_encoder_config.get("pert_path"),
                 d_out=self.d_model,
                 padding_idx=pert_encoder_config.get("padding_idx", 0),
@@ -192,7 +192,7 @@ class TXModel(nn.Module):
         drug_ids: Optional[
             Tensor
         ] = None,  # drug_ids is None if use_chem_token is set to False
-        pert_ids: Optional[
+        target_gene_ids: Optional[
             Tensor
         ] = None, 
     ) -> Tensor:
@@ -214,9 +214,9 @@ class TXModel(nn.Module):
             drug_embs = self.chem_encoder(drug_ids)  # (batch, embsize)
             total_embs[:, 1, :] = drug_embs  # (batch, seq_len, embsize)
 
-        if self.use_pert_token:
-            pert_embs = self.pert_encoder(pert_ids)  # (batch, embsize)
-            total_embs[:, 1, :] = pert_embs  # (batch, seq_len, embsize)
+        if self.use_genetic_token:
+            gp_embs = self.gene_pert_encoder(target_gene_ids)  # (batch, embsize)
+            total_embs[:, 1, :] = gp_embs  # (batch, seq_len, embsize)
 
         self.cur_gene_token_embs = token_embs
 
@@ -263,7 +263,7 @@ class TXModel(nn.Module):
         gen_masks: Tensor,
         key_padding_mask: Tensor,
         drug_ids: Optional[Tensor] = None,
-        pert_ids: Optional[Tensor] = None,
+        target_gene_ids: Optional[Tensor] = None,
         skip_decoders: Optional[bool] = None,
     ) -> Mapping[str, Tensor]:
 
@@ -277,7 +277,7 @@ class TXModel(nn.Module):
             gen_masks,
             key_padding_mask,
             drug_ids=drug_ids,
-            pert_ids=pert_ids,
+            target_gene_ids=target_gene_ids,
         )
 
         output = {}
@@ -350,9 +350,9 @@ class ComposerTX(ComposerModel):
         drug_ids = (
             batch["drug_ids"] if "drug_ids" in batch else None
         )  # drug_ids is None if use_chem_token is set to False
-        pert_ids = (
-            batch["pert_ids"] if "pert_ids" in batch else None
-        )  # pert_ids is None if use_pert_token is set to False
+        target_gene_ids = (
+            batch["target_gene_ids"] if "target_gene_ids" in batch else None
+        )  # target_gene_ids is None if use_pert_token is set to False
 
         output_dict = self.model(
             genes,
@@ -360,7 +360,7 @@ class ComposerTX(ComposerModel):
             gen_masks,
             key_padding_mask,
             drug_ids=drug_ids,
-            pert_ids=pert_ids,
+            target_gene_ids=target_gene_ids,
             skip_decoders=skip_decoders,
         )
 
