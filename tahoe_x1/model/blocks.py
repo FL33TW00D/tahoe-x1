@@ -463,10 +463,10 @@ class ChemEncoder(nn.Module):
             x = self.norm(x)
         return x
 
-class PertEncoder(nn.Module):
+class GPEncoder(nn.Module):
     def __init__(
         self,
-        pert_path: dict,
+        gp_path: dict,
         d_out: int,
         padding_idx: int = 0,
         activation: str = "leaky_relu",
@@ -477,17 +477,17 @@ class PertEncoder(nn.Module):
 
         if dist.get_local_rank() == 0:
             download_file_from_s3_url(
-                s3_url=pert_path["remote"],
-                local_file_path=pert_path["local"],
+                s3_url=gp_path["remote"],
+                local_file_path=gp_path["local"],
             )
-        with dist.local_rank_zero_download_and_wait(pert_path["local"]):
+        with dist.local_rank_zero_download_and_wait(gp_path["local"]):
             dist.barrier()
 
-        pert_emb = torch.load(pert_path["local"])
-        embedding_dim = pert_emb.shape[1]
+        gp_emb = torch.load(gp_path["local"])
+        embedding_dim = gp_emb.shape[1]
 
         self.embedding = nn.Embedding.from_pretrained(
-            pert_emb,
+            gp_emb,
             padding_idx=padding_idx,
             freeze=freeze,
         )

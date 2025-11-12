@@ -1,3 +1,8 @@
+"""
+Pretrained models may not have been trained with <chem> or <genetic> token.
+Add 1 if required by resizing the embedding matrix and saving a new checkpoint.
+"""
+
 import sys
 import torch
 

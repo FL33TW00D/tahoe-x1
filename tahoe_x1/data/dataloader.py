@@ -206,7 +206,7 @@ class CountDataset(torch.utils.data.Dataset):
         }
 
 
-class PertDataset(torch.utils.data.Dataset):
+class GPDataset(torch.utils.data.Dataset):
     def __init__(
         self,
         count_matrix: Union[np.ndarray, csr_matrix],
@@ -263,5 +263,5 @@ class PertDataset(torch.utils.data.Dataset):
             "id": idx,
             "genes": torch.tensor(genes, dtype=torch.long),
             "expressions": torch.tensor(values, dtype=torch.float),
-            "gene_id": pert_genes,
+            "target_gene_id": pert_genes,
         }

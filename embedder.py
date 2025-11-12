@@ -50,7 +50,7 @@ def predict(
         "predict": {
             "seq_len_dataset": 2048,
             "return_gene_embeddings": False,
-            "use_pert_inf": True
+            "use_genetic_inf": True
         }
     }
     cfg = om.create(cfg)

@@ -20,7 +20,7 @@ from tahoe_x1.model.blocks import (
     ExprDecoder,
     GeneEncoder,
     MVCDecoder,
-    PertEncoder,
+    GPEncoder,
     TXBlock,
     TXEncoder,
     gene_encoder_defaults,
@@ -49,7 +49,7 @@ class TXModel(nn.Module):
         self.norm_scheme = model_config.get("norm_scheme", "pre")
         self.transformer_activation = model_config.get("transformer_activation", "gelu")
         self.use_chem_token = collator_config.get("use_chem_token", False)
-        self.use_genetic_token = collator_config.get("use_pert_token", False)
+        self.use_gp_token = collator_config.get("use_gp_token", False)
         assert (
             not self.use_chem_token or "chemical_encoder" in model_config
         ), "If use_chem_token is set to True, chemical_encoder submodule needs to be specified!"
@@ -119,13 +119,13 @@ class TXModel(nn.Module):
                 fp_dim=chem_encoder_config.get("fp_dim", None),
             )
 
-        if self.use_genetic_token:
-            pert_encoder_config = model_config.pert_encoder
-            self.gene_pert_encoder = PertEncoder(
-                pert_path=pert_encoder_config.get("pert_path"),
+        if self.use_gp_token:
+            gp_encoder_config = model_config.gp_encoder
+            self.gp_encoder = GPEncoder(
+                gp_path=gp_encoder_config.get("gp_path"),
                 d_out=self.d_model,
-                padding_idx=pert_encoder_config.get("padding_idx", 0),
-                activation=pert_encoder_config.get("activation", "leaky_relu"),
+                padding_idx=gp_encoder_config.get("padding_idx", 0),
+                activation=gp_encoder_config.get("activation", "leaky_relu"),
             )
 
         encoder_layers = TXBlock(
@@ -214,8 +214,8 @@ class TXModel(nn.Module):
             drug_embs = self.chem_encoder(drug_ids)  # (batch, embsize)
             total_embs[:, 1, :] = drug_embs  # (batch, seq_len, embsize)
 
-        if self.use_genetic_token:
-            gp_embs = self.gene_pert_encoder(target_gene_ids)  # (batch, embsize)
+        if self.use_gp_token:
+            gp_embs = self.gp_encoder(target_gene_ids)  # (batch, embsize)
             total_embs[:, 1, :] = gp_embs  # (batch, seq_len, embsize)
 
         self.cur_gene_token_embs = token_embs
@@ -352,7 +352,7 @@ class ComposerTX(ComposerModel):
         )  # drug_ids is None if use_chem_token is set to False
         target_gene_ids = (
             batch["target_gene_ids"] if "target_gene_ids" in batch else None
-        )  # target_gene_ids is None if use_pert_token is set to False
+        )  # target_gene_ids is None if use_gp_token is set to False
 
         output_dict = self.model(
             genes,

@@ -58,9 +58,9 @@ collator:
   num_bins: 51
   right_binning: False
   use_junk_tokens: False
-  use_pert_token: True
-  pert_to_id_path:
-    local: "pert_to_id_pad.json"
+  use_gp_token: True
+  gp_to_id_path:
+    local: "gp_to_id_pad.json"
 train_loader:
   dataset:
     streams:

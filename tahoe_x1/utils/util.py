@@ -96,19 +96,19 @@ def loader_from_adata(
     if max_length is None:
         max_length = len(gene_ids)
 
-    from tahoe_x1.data import PertDataset, DataCollator
+    from tahoe_x1.data import GPDataset, DataCollator
 
-    dataset = PertDataset(
+    dataset = GPDataset(
         count_matrix,
         gene_ids,
-        pert_genes=np.array(adata.obs["gene_id"].tolist()),
+        gp_genes=np.array(adata.obs["gene_id"].tolist()),
         cls_token_id=vocab["<cls>"],
         pad_value=collator_cfg["pad_value"],
     )
     collate_fn = DataCollator(
         vocab=vocab,
         drug_to_id_path=collator_cfg.get("drug_to_id_path", None),
-        pert_to_id_path=collator_cfg.get("pert_to_id_path", None),
+        gp_to_id_path=collator_cfg.get("gp_to_id_path", None),
         do_padding=collator_cfg.get("do_padding", True),
         unexp_padding=False,  # Disable padding with random unexpressed genes for inference
         pad_token_id=collator_cfg.pad_token_id,
@@ -125,7 +125,7 @@ def loader_from_adata(
         right_binning=collator_cfg.get("right_binning", False),
         keep_first_n_tokens=collator_cfg.get("keep_first_n_tokens", 1),
         use_chem_token=collator_cfg.get("use_chem_token", False),
-        use_pert_token=collator_cfg.get("use_pert_token", False),
+        use_gp_token=collator_cfg.get("use_gp_token", False),
     )
     data_loader = torch.utils.data.DataLoader(
         dataset,
