@@ -20,7 +20,7 @@ huggingface:
     test_size: 0.01
     seed: 42
     shuffle: True
-  num_proc: 128
+  num_proc: 4 
   obs_metadata_columns:
     - target_gene_id 
     - kd_eff 

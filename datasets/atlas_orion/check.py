@@ -1,12 +1,5 @@
 import anndata as ad
 
-adata = ad.read_h5ad('./QC_kd_unified_hct_merged_filtered_cast.h5ad', backed="r")
-print(adata)
+x = ad.read_h5ad("./hek_chunks/QC_kd_unified_hek_001.h5ad", backed="r+")
 
-print(adata.obs["kd_eff"].value_counts())
-
-nt = adata[adata.obs["target_gene"] == "non-targeting"]
-print(nt.obs.head())
-
-
-print(adata.obs["kd_eff"].dtype)
+print(x.X[0:50, 0:50])
