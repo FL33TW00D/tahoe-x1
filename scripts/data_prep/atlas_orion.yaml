@@ -38,7 +38,7 @@ mds:
     expressions: "pkl"
     genes: "pkl"
     id: "int64"
-    gene_id: "str"
+    target_gene_id: "str"
     kd_eff: "float64"
   compression: zstd
   hashes:
