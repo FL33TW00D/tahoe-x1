@@ -8,13 +8,13 @@ vocabulary:
   local: "vocab.json"
 model:
   name: tahoe_x1
-  d_model: 512
-  n_layers: 12
+  d_model: 2560
+  n_layers: 32
   init_device: cpu
   expansion_ratio: 4
   standard_scale_outputs: False
-  transformer_activation: relu
-  n_heads: 8
+  transformer_activation: gelu
+  n_heads: 20
   norm_scheme: "pre"
   use_generative_training: True
   use_cell_conditioned_generation: False
@@ -22,10 +22,10 @@ model:
   cell_emb_style: cls
   attn_config:
     attn_impl: flash
-    attn_type: "grouped_query_attention"
-    kv_nheads: 8
-    attn_pdrop: 0.0
     use_attn_mask: False
+    attn_type: "grouped_query_attention"
+    kv_nheads: 20
+    attn_pdrop: 0.0
   norm_config:
     norm_type: "layernorm"
     eps: 1.0e-5
@@ -33,7 +33,7 @@ model:
     input_emb_style: "continuous"
     dropout: 0.1
     max_value: 512
-    activation: relu
+    activation: gelu
     use_norm: True
   gene_encoder:
     use_norm: True
@@ -44,7 +44,7 @@ model:
   expression_decoder:
     n_outputs: 1
     n_layers: 1
-    activation: "leaky_relu"
+    activation: "gelu"
   gp_encoder:
     gp_path:
       remote: "s3://fleetwood/orion/gp_features.pt"
@@ -59,7 +59,7 @@ collator:
   do_binning: True
   mlm_probability: 0.5
   mask_value: -1
-  max_length: 1024
+  max_length: 2048 
   sampling: True
   data_style: "both"
   num_bins: 51
@@ -104,12 +104,12 @@ valid_loader:
   persistent_workers: True
 optimizer:
   name: decoupled_adamw
-  lr: 3.0e-4
+  lr: 3.0e-5
   betas:
     - 0.9
     - 0.95
   eps: 1.0e-08
-  weight_decay: 1.0e-05
+  weight_decay: 3.0e-06
 scheduler:
   name: cosine_with_warmup
   t_warmup: "0.05dur"
@@ -123,7 +123,7 @@ algorithms:
 precision: amp_bf16
 eval_interval: "2000ba"
 eval_subset_num_batches: 100
-max_duration: "8ep"
+max_duration: "1ep"
 fsdp_config:
   sharding_strategy: FULL_SHARD
   mixed_precision: DEFAULT
