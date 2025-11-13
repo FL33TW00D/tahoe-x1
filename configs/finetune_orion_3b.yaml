@@ -1,7 +1,7 @@
 seed: 777
-device_train_batch_size: 64
-global_train_batch_size: 64
-device_eval_batch_size: 64
+device_train_batch_size: 8 
+global_train_batch_size: 128 
+device_eval_batch_size: 128 
 device_train_microbatch_size: "auto"
 vocabulary:
   remote: "s3://tahoe-hackathon-data/MFM/vevo_v2_vocab.json"
@@ -123,7 +123,7 @@ algorithms:
 precision: amp_bf16
 eval_interval: "2000ba"
 eval_subset_num_batches: 100
-max_duration: "2ep"
+max_duration: "1ep"
 fsdp_config:
   sharding_strategy: FULL_SHARD
   mixed_precision: DEFAULT
