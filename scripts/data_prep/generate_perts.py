@@ -4,9 +4,9 @@ from fetch_gps import fetch
 import json
 
 if __name__ == "__main__":
-    if not os.path.exists("./ESM2_gp_features_ensembl_22631.pt"): 
+    if not os.path.exists("./ESM2_pert_features_ensembl_22631.pt"): 
         fetch()
-    gps = torch.load("./ESM2_gp_features_ensembl_22631.pt")
+    gps = torch.load("./ESM2_pert_features_ensembl_22631.pt")
     print(gps.keys())
     embedding_dim = 5120
     

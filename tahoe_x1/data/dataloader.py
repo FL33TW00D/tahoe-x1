@@ -61,7 +61,7 @@ def build_dataloader(
 
     collate_fn = DataCollator(
         vocab=vocab,
-        pert_to_id_path=collator_cfg.get("pert_to_id_path", None),
+        gp_to_id_path=collator_cfg.get("gp_to_id_path", None),
         drug_to_id_path=collator_cfg.get("drug_to_id_path", None),
         do_padding=collator_cfg.get("do_padding", True),
         unexp_padding=loader_cfg.get("unexp_padding", False),
@@ -79,7 +79,7 @@ def build_dataloader(
         right_binning=collator_cfg.get("right_binning", False),
         keep_first_n_tokens=collator_cfg.get("keep_first_n_tokens", 1),
         use_chem_token=collator_cfg.get("use_chem_token", False),
-        use_pert_token=collator_cfg.get("use_pert_token", False),
+        use_gp_token=collator_cfg.get("use_gp_token", False),
     )
 
     data_loader = StreamingDataLoader(
@@ -255,7 +255,7 @@ class GPDataset(torch.utils.data.Dataset):
         nonzero_idx = row.indices
         values = row.data
         genes = self.gene_ids[nonzero_idx]
-        pert_genes = self.pert_genes[idx]
+        pert_gene = self.pert_genes[idx]
         if self.add_cls_token:
             genes = np.insert(genes, 0, self.cls_token_id)
             values = np.insert(values, 0, self.pad_value)
@@ -263,5 +263,5 @@ class GPDataset(torch.utils.data.Dataset):
             "id": idx,
             "genes": torch.tensor(genes, dtype=torch.long),
             "expressions": torch.tensor(values, dtype=torch.float),
-            "target_gene_id": pert_genes,
+            "target_gene_id": pert_gene,
         }

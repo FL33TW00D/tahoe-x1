@@ -18,7 +18,9 @@ class DataCollator(DefaultDataCollator):
     Args:
         vocab (:obj: GeneVocab): The vocabulary that includes the gene ids, name, special tokens, etc.
         use_chem_token (:obj:`bool`): whether to create and use the chemical token in the sequence.
+        use_gp_token (:obj:`bool`): whether to create and use the <genetic> perturbation token in the sequence.
         drug_to_id_path (:obj:`dict`): path to the drug to id .json file.
+        gp_to_id_path (:obj:`dict`): path to the .json file which maps ENSG -> token index
         do_padding (:obj:`bool`): whether to pad the sequences to the max length.
         unexp_padding (:obj:`bool`): whether to pad the sequences with unexpressed genes. If False it pads with pad token.
         pad_token_id (:obj:`int`, optional): the token id to use for padding.
@@ -51,9 +53,9 @@ class DataCollator(DefaultDataCollator):
         self,
         vocab: GeneVocab,
         drug_to_id_path: Optional[dict] = None,
-        pert_to_id_path: Optional[dict] = None,
+        gp_to_id_path: Optional[dict] = None,
         use_chem_token: int = False,
-        use_pert_token: int = False,
+        use_gp_token: int = False,
         do_padding: bool = True,
         unexp_padding: bool = False,
         pad_token_id: Optional[int] = None,
@@ -100,29 +102,29 @@ class DataCollator(DefaultDataCollator):
         )
         self.vocab = vocab
         self.use_chem_token = use_chem_token
-        self.use_pert_token = use_pert_token
+        self.use_gp_token = use_gp_token
         if self.use_chem_token:
             assert "<drug>" in vocab, "<drug> token must be in the vocabulary."
             self.drug_token_id = vocab["<drug>"]
         else:
             self.drug_token_id = None
-        if self.use_pert_token:
-            assert "<perturbation>" in vocab, "<perturbation> token must be in the vocabulary."
-            self.pert_token_id = vocab["<perturbation>"]
+        if self.use_gp_token:
+            assert "<genetic>" in vocab, "<genetic> token must be in the vocabulary."
+            self.gp_token_id = vocab["<genetic>"]
         else:
-            self.pert_token_id = None
+            self.gp_token_id = None
 
         assert not self.use_chem_token or drug_to_id_path is not None, (
             "If `use_chem_token` is True, `drug_to_id_path` must be provided.",
         )
-        assert not self.use_pert_token or pert_to_id_path is not None, (
-            "If `use_pert_token` is True, `pert_to_id_path` must be provided.",
+        assert not self.use_gp_token or gp_to_id_path is not None, (
+            "If `use_gp_token` is True, `gp_to_id_path` must be provided.",
         )
         assert drug_to_id_path is None or self.use_chem_token, (
             "If `drug_to_id_path` is provided, `use_chem_token` must be True.",
         )
-        assert pert_to_id_path is None or self.use_pert_token, (
-            "If `pert_to_id_path` is provided, `use_pert_token` must be True.",
+        assert gp_to_id_path is None or self.use_gp_token, (
+            "If `gp_to_id_path` is provided, `use_gp_token` must be True.",
         )
         assert not self.use_chem_token or self.keep_first_n_tokens > 1, (
             "If `use_chem_token` is True, we need to keep <cls> and <drug> token in the beggining of pcpt_genes. So `keep_first_n_tokens` must be >=2!",
@@ -140,20 +142,20 @@ class DataCollator(DefaultDataCollator):
             with open(drug_to_id_path["local"]) as f:
                 self.drug_to_id = json.load(f)
 
-        if self.use_pert_token:
+        if self.use_gp_token:
             print("Loading pert_to_id mapping...")
             if dist.get_local_rank() == 0:
                 download_file_from_s3_url(
-                    s3_url=pert_to_id_path["remote"],
-                    local_file_path=pert_to_id_path["local"],
+                    s3_url=gp_to_id_path["remote"],
+                    local_file_path=gp_to_id_path["local"],
                 )
-            with dist.local_rank_zero_download_and_wait(pert_to_id_path["local"]):
+            with dist.local_rank_zero_download_and_wait(gp_to_id_path["local"]):
                 dist.barrier()
 
-            with open(pert_to_id_path["local"]) as f:
-                self.pert_to_id = json.load(f)
+            with open(gp_to_id_path["local"]) as f:
+                self.gp_to_id = json.load(f)
             
-            print(f"Loaded {len(self.pert_to_id)} perturbation ids.")
+            print(f"Loaded {len(self.gp_to_id)} <genetic> perturbation ids.")
 
     def __post_init__(self):
         if self.do_padding:
@@ -213,14 +215,14 @@ class DataCollator(DefaultDataCollator):
                     dtype=torch.int,
                 )
 
-            if self.use_pert_token:
+            if self.use_gp_token:
                 pert = (
-                    example["gene_id"]
-                    if "gene_id" in example and example["gene_id"] in self.pert_to_id
+                    example["target_gene_id"]
+                    if "target_gene_id" in example and example["target_gene_id"] in self.gp_to_id
                     else "<pad>"
                 )
-                example["pert_id"] = torch.as_tensor(
-                    self.pert_to_id[pert],
+                example["target_gene_id"] = torch.as_tensor(
+                    self.gp_to_id[pert],
                     dtype=torch.int,
                 )
             if isinstance(example["genes"], list):
@@ -250,7 +252,7 @@ class DataCollator(DefaultDataCollator):
         expr_raws = []
         gen_masks = []
         drug_ids = [] if self.use_chem_token else None
-        pert_ids = [] if self.use_pert_token else None
+        target_gene_ids = [] if self.use_gp_token else None
 
 
         for example in examples:
@@ -281,12 +283,12 @@ class DataCollator(DefaultDataCollator):
                     ),
                 )
 
-            if self.use_pert_token:
+            if self.use_gp_token:
                 genes = torch.cat(
                     (
                         genes[:1],
                         torch.tensor(
-                            [self.pert_token_id],
+                            [self.gp_token_id],
                             device=genes.device,
                             dtype=genes.dtype,
                         ),
@@ -346,9 +348,9 @@ class DataCollator(DefaultDataCollator):
                 drug = example["drug_id"]
                 drug_ids.append(drug)
 
-            if self.use_pert_token:
-                pert = example["pert_id"]
-                pert_ids.append(pert)
+            if self.use_gp_token:
+                pert = example["target_gene_id"]
+                target_gene_ids.append(pert)
 
         data_dict = {
             "gene": torch.stack(padded_genes, dim=0),
@@ -361,9 +363,9 @@ class DataCollator(DefaultDataCollator):
             drug_ids = torch.stack(drug_ids)
             data_dict["drug_ids"] = drug_ids
 
-        if self.use_pert_token:
-            pert_ids = torch.stack(pert_ids)
-            data_dict["pert_ids"] = pert_ids
+        if self.use_gp_token:
+            target_gene_ids = torch.stack(target_gene_ids)
+            data_dict["target_gene_ids"] = target_gene_ids
 
         # add reserved keys
         for key in self.reserve_keys:
