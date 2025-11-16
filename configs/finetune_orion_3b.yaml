@@ -110,6 +110,10 @@ optimizer:
     - 0.95
   eps: 1.0e-08
   weight_decay: 1.0e-06
+  param_groups:
+    - param_str_match: "gp_encoder"
+      lr: 3.0e-4 # Increase LR as trained from scratch
+      weight_decay: 1.0e-05
 scheduler:
   name: cosine_with_warmup
   t_warmup: "0.05dur"
