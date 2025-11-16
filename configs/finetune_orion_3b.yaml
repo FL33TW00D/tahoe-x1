@@ -69,7 +69,7 @@ collator:
   gp_to_id_path:
     remote: "s3://fleetwood/orion/gp_to_id.json"
     local: "gp_to_id.json"
-  keep_first_n_tokens: 3
+  keep_first_n_tokens: 3 #both <drug> and <genetic> so 3
 train_loader:
   dataset:
     streams:

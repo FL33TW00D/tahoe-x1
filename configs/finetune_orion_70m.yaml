@@ -69,13 +69,13 @@ collator:
   gp_to_id_path:
     remote: "s3://fleetwood/orion/gp_to_id.json"
     local: "gp_to_id.json"
-  keep_first_n_tokens: 3
+  keep_first_n_tokens: 2 # no support for chem_token, so just 2
 train_loader:
   dataset:
     streams:
       atlas_orion:
-        remote: "s3://fleetwood/orion_mds/train/"
-        local: "mds-data-folder/orion_mds/train"
+        remote: "s3://fleetwood/orion_full_MDS/train/"
+        local: "mds-data-folder/orion_full_MDS/train"
     download_timeout: 300
     allow_unsafe_types: True
     shuffle: True
@@ -90,8 +90,8 @@ valid_loader:
   dataset:
     streams:
       atlas_orion:
-        remote: "s3://fleetwood/orion_mds/valid/"
-        local: "mds-data-folder/orion_mds/valid"
+        remote: "s3://fleetwood/orion_full_MDS/valid/"
+        local: "mds-data-folder/orion_full_MDS/valid"
     download_timeout: 300
     allow_unsafe_types: True
     shuffle: False

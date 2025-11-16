@@ -5,10 +5,10 @@ sys.path.insert(0, os.path.abspath('./scripts'))
 from train import main
 
 # Load configuration for fine-tuning
-finetune_cfg = om.load("./configs/finetune_orion_3b.yaml")
+finetune_cfg = om.load("./configs/finetune_orion_70m.yaml")
 
 # Set checkpoint path
-checkpoint_path = "./best-model-3b.pt"  # Or local path
+checkpoint_path = "./best-model.pt"  # Or local path
 finetune_cfg.load_path = checkpoint_path
 finetune_cfg.load_strict_model_weights = False
 

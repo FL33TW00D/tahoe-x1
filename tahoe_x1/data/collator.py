@@ -129,8 +129,8 @@ class DataCollator(DefaultDataCollator):
         assert not self.use_chem_token or self.keep_first_n_tokens > 1, (
             "If `use_chem_token` is True, we need to keep <cls> and <drug> token in the beggining of pcpt_genes. So `keep_first_n_tokens` must be >=2!",
         )
-        assert not self.use_gp_token or self.keep_first_n_tokens > 2, (
-            "If `use_gp_token` is True, we need to keep <cls>, <drug> and <genetic> token in the beggining of pcpt_genes. So `keep_first_n_tokens` must be >=3!",
+        assert not self.use_gp_token or self.keep_first_n_tokens > 1, (
+            "If `use_gp_token` is True, we need to keep <cls>, <drug> and <genetic> token in the beggining of pcpt_genes. So `keep_first_n_tokens` must be >=2!",
         )
         # load drug_to_id mapping if present
         if self.use_chem_token:
@@ -287,26 +287,28 @@ class DataCollator(DefaultDataCollator):
                 )
 
             if self.use_gp_token:
+                index = 2 if self.use_chem_token else 1
+
                 genes = torch.cat(
                     (
-                        genes[:2],
+                        genes[:index],
                         torch.tensor(
                             [self.gp_token_id],
                             device=genes.device,
                             dtype=genes.dtype,
                         ),
-                        genes[2:],
+                        genes[index:],
                     ),
                 )
                 expressions = torch.cat(
                     (
-                        expressions[:2],
+                        expressions[:index],
                         torch.tensor(
                             [self.pad_value],
                             device=expressions.device,
                             dtype=expressions.dtype,
                         ),
-                        expressions[2:],
+                        expressions[index:],
                     ),
                 )
 
@@ -379,6 +381,7 @@ class DataCollator(DefaultDataCollator):
             else:
                 data_dict[key] = data_  # if not tensor, just keep the list
 
+        print(data_dict)
         return data_dict
 
     def get_mlm_probability(self) -> float:

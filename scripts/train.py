@@ -482,6 +482,27 @@ def main(cfg: DictConfig) -> composer.Trainer:
     optimizer_name: str = optimizer_config.pop("name")
     optimizer = build_optimizer(model, optimizer_name, optimizer_config)
 
+    log.info("=" * 80)
+    log.info("MODEL PARAMETERS WITH LEARNING RATES")
+    log.info("=" * 80)
+
+    param_to_lr = {}
+    for group_idx, param_group in enumerate(optimizer.param_groups):
+        lr = param_group['lr']
+        for param in param_group['params']:
+            param_to_lr[id(param)] = (group_idx, lr)
+
+    for name, param in model.named_parameters():
+        param_id = id(param)
+        if param_id in param_to_lr:
+            group_idx, lr = param_to_lr[param_id]
+            log.info(f"{name:60s} | {str(param.shape):25s} | Group {group_idx} | LR: {lr:.2e}")
+        else:
+            log.info(f"{name:60s} | {str(param.shape):25s} | ⚠️  NOT IN OPTIMIZER")
+
+    log.info("=" * 80)
+
+
     # Build the Trainer
     log.info("Building Trainer...")
     trainer = composer.Trainer(
