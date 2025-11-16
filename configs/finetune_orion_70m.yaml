@@ -125,9 +125,9 @@ algorithms:
     clipping_threshold: 1.0
   low_precision_layernorm: {}
 precision: amp_bf16
-eval_interval: "2000ba"
+eval_interval: "5000ba"
 eval_subset_num_batches: 100
-max_duration: "8ep"
+max_duration: "4ep"
 fsdp_config:
   sharding_strategy: FULL_SHARD
   mixed_precision: DEFAULT
