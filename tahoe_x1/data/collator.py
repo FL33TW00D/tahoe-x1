@@ -129,6 +129,9 @@ class DataCollator(DefaultDataCollator):
         assert not self.use_chem_token or self.keep_first_n_tokens > 1, (
             "If `use_chem_token` is True, we need to keep <cls> and <drug> token in the beggining of pcpt_genes. So `keep_first_n_tokens` must be >=2!",
         )
+        assert not self.use_gp_token or self.keep_first_n_tokens > 2, (
+            "If `use_gp_token` is True, we need to keep <cls>, <drug> and <genetic> token in the beggining of pcpt_genes. So `keep_first_n_tokens` must be >=3!",
+        )
         # load drug_to_id mapping if present
         if self.use_chem_token:
             if dist.get_local_rank() == 0:
@@ -286,24 +289,24 @@ class DataCollator(DefaultDataCollator):
             if self.use_gp_token:
                 genes = torch.cat(
                     (
-                        genes[:1],
+                        genes[:2],
                         torch.tensor(
                             [self.gp_token_id],
                             device=genes.device,
                             dtype=genes.dtype,
                         ),
-                        genes[1:],
+                        genes[2:],
                     ),
                 )
                 expressions = torch.cat(
                     (
-                        expressions[:1],
+                        expressions[:2],
                         torch.tensor(
                             [self.pad_value],
                             device=expressions.device,
                             dtype=expressions.dtype,
                         ),
-                        expressions[1:],
+                        expressions[2:],
                     ),
                 )
 

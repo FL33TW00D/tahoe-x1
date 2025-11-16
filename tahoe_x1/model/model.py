@@ -56,6 +56,12 @@ class TXModel(nn.Module):
         assert (
             "chemical_encoder" not in model_config or self.use_chem_token
         ), "If chemical_encoder submodule is specified, use_chem_token needs to be set to True!"
+        assert (
+            not self.use_gp_token or "gp_encoder" in model_config
+        ), "If use_gp_token is set to True, gp_encoder submodule needs to be specified!"
+        assert (
+            "gp_encoder" not in model_config or self.use_gp_token
+        ), "If gp_encoder submodule is specified, use_gp_token needs to be set to True!"
 
         self.init_device = model_config.get("init_device", "cpu")
         if self.init_device == "mixed":
@@ -216,7 +222,7 @@ class TXModel(nn.Module):
 
         if self.use_gp_token:
             gp_embs = self.gp_encoder(target_gene_ids)  # (batch, embsize)
-            total_embs[:, 1, :] = gp_embs  # (batch, seq_len, embsize)
+            total_embs[:, 2, :] = gp_embs  # (batch, seq_len, embsize)
 
         self.cur_gene_token_embs = token_embs
 
