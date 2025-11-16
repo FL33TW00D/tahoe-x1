@@ -381,7 +381,6 @@ class DataCollator(DefaultDataCollator):
             else:
                 data_dict[key] = data_  # if not tensor, just keep the list
 
-        print(data_dict)
         return data_dict
 
     def get_mlm_probability(self) -> float:
